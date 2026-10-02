@@ -1,0 +1,19 @@
+{
+  "name": "chaiaurcode",
+  "version": "1.0.0",
+  "description": "a basic app deploy",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js"
+  },
+  "keywords": [
+    "node",
+    "chai"
+  ],
+  "author": "\"Irshad\"",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  }
+}
