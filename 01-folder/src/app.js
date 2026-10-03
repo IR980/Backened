@@ -1,4 +1,8 @@
 const express = require('express');
+const Note = require('./models/note.model');
+const dns = require('dns');
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 app.use(express.json());
@@ -13,40 +17,55 @@ app.get('/about',(req, res) => {
     res.send('About Page')
 })
 
-app.post('/notes', (req, res) => {
-    console.log(req.body);
-    notes.push(req.body);
+app.post('/notes', async (req, res) => {
+    // console.log(req.body);
+    // notes.push(req.body);
+    const data = req.body;
+    await Note.create({
+        Title: data.Title,
+        Description: data.Description
+    });
     
     res.status(201).json({
-        message: 'Note added successfully',
-        note: req.body
+        message: 'Note Created successfully',
+        note: notes
     })
 })
 
-app.get('/notes', (req, res) => {
+app.get('/notes', async (req, res) => {
+    const notes = await Note.find();
     res.status(200).json({
         message: 'Notes fetched successfully',
         notes: notes
     })
 })
 
-app.delete('/notes/:id', (req, res) => {
+app.delete('/notes/:id', async (req, res) => {
     const id = req.params.id;
-    delete notes[id];
+    await Note.findOneAndDelete({ 
+      _id: id 
+    });
     res.status(200).json({
-        message: 'Note deleted successfully',
-        notes: notes
-    })
+        message: 'Note deleted successfully'
+    });
 })
 
-app.patch('/notes/:id', (req, res) => {
+app.patch('/notes/:id', async (req, res) => {
     const id = req.params.id;
-    const Description = req.body.Description;
-    notes[id].Description = Description;
+    const data = req.body;
+    await Note.findOneAndUpdate({
+        _id: id
+    }, {
+        Title: data.Title,
+        Description: data.Description
+    });
     res.status(200).json({
-        message: 'Note updated successfully',
-        notes: notes
-    })
+        message: 'Note updated successfully'
+    });
 })
 
 module.exports = app;
+
+
+// mohammadirshad9163_db_user  5X2KNK0RHutSRtJq
+// mongodb+srv://mohammadirshad9163_db_user:5X2KNK0RHutSRtJq@cluster0.iqqgrbf.mongodb.net/
