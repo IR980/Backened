@@ -3,9 +3,11 @@ const Post = require("./models/post.model");
 const multer = require("multer");
 const dns = require("dns");
 const uploadFile = require("./services/storage.service")
+const cors = require("cors");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -18,18 +20,24 @@ app.get("/posts", async (req, res) => {
   }
 });
 
-app.post("/posts",upload.single("image"), async (req, res) => {
+app.post("/create-post", upload.single("image"), async (req, res) => {
   try {
     console.log("Request body:", req.body);
     console.log("Request file:", req.file);
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Image file is required" });
+    }
+
     const result = await uploadFile(req.file.buffer);
     console.log("Image uploaded successfully:", result);
+
     const post = new Post({
       image: result.url,
       caption: req.body.caption,
     });
-    await post.save();
 
+    await post.save();
     res.status(201).json({ message: "Post created successfully", post });
   } catch (error) {
     res.status(400).json({ message: "Failed to create post", error: error.message });
