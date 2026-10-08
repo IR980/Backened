@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token,)
+    res.cookie("token", token, { httpOnly: true });
 
     return res.status(201).json({
       message: "User registered successfully",
