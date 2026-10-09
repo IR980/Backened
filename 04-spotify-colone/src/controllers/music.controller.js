@@ -4,23 +4,6 @@ const { uploadFile } = require('../services/storage.service');
 const jwt = require('jsonwebtoken');
 
 async function artistCreate(req, res) {
-  const token = req.cookies?.token;
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  if (decoded.role !== 'artist') {
-    return res.status(403).json({
-      message: "You don't have access to upload music",
-    });
-  }
 
   if (!req.file) {
     return res.status(400).json({ message: 'Music file is required' });
@@ -35,7 +18,7 @@ async function artistCreate(req, res) {
   const music = await musicModel.create({
     uri: result.url,
     title,
-    artist: decoded.id,
+    artist: req.user.id,
   });
 
   return res.status(201).json({
@@ -50,33 +33,12 @@ async function artistCreate(req, res) {
 }
 
 async function createAlbum(req, res){
-  const token = req.cookies.token;
-  if(!token){
-    res.status(401).json({
-      message: "unauthorized"
-    })
-  }
-
-  let decoded;
-  try{
-    decoded = jwt.verify(token, process.env.JWT_SECRET)
-  }catch(err){
-    res.status(401).json({
-      message: "unauthorized"
-    })
-  }
-
-  if(decoded.role !== "artist"){
-    return res.status(403).json({
-      message: "your are not get permission to create an album music"
-    })
-  }
 
   const {title, musics} = req.body;
 
   const album = await albumModel.create({
    title,
-   artist: decoded.id,
+   artist: req.user.id,
    musics: musics
   })
 
@@ -92,4 +54,20 @@ async function createAlbum(req, res){
 
 }
 
-module.exports = {artistCreate, createAlbum};
+async function getAllMusic(req, res) {
+  const musics = await musicModel.find().populate("artist")
+  res.status(200).json({
+    message: "mucisc fetched successfully",
+    musics: musics,
+  })
+}
+
+async function getAllAlbum(req, res){
+  const album = await albumModel.find().populate("artist").populate("musics")
+  res.status(200).json({
+    message: "album fetched succesfully",
+    album: album,
+  })
+}
+
+module.exports = {artistCreate, createAlbum, getAllMusic, getAllAlbum};
